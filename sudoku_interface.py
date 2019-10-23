@@ -14,7 +14,7 @@ class Interface():
     def get_size(self):
         size = ""
         while size not in ('4', '9'):
-            size = input("What size do you want the board to be? Answer '4' or '9'\n").lower()
+            size = input("\nWhat size do you want the board to be? Answer '4' or '9'\n").lower()
             if size not in ('4', '9'):
                 print("Please answer with '4' or '9'\n")
         if size == "9":
@@ -45,6 +45,7 @@ class Interface():
         self.column = input("What column? ")
 
 
-# game = Interface()
-# game.set_game()
-# game.start_playing()
+if __name__ == "__main__":
+    game = Interface()
+    game.set_game()
+    game.start_playing()
