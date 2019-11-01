@@ -18,8 +18,7 @@ def get_board_from_api(size):
 
     table = resp.json()["squares"]
     for number in range(len(table)):
-        board[table[number]["x"]][table[number]["y"]] = "\033[1m\033[4m" + str(table[number]["value"]) + "\033[0m"
-
+        board[table[number]["x"]][table[number]["y"]] =  int(table[number]["value"])
     return board
 
 

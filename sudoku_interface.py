@@ -24,9 +24,21 @@ class Interface():
             self.size = 4
             self.play = Sudoku4()
 
+    def nice_board(self):
+        nice = ""
+        while nice not in ("y", "n"):
+            nice = input("\nWould you like to play with a nicer board? (y, n)\n").lower()
+            if nice not in ('y', 'n'):
+                print("Please answer with 'y' or 'n'\n")
+        if nice == "y":
+            self.play.nice_board = True
+        elif nice == "n":
+            self.play.nice_board = False
+
     def set_game(self):
         self.get_size()
         self.play.set_board(get_board_from_api(self.size))
+        self.nice_board()
 
     def start_playing(self):
         print("Game Starts!")

@@ -43,30 +43,34 @@ class Test_api(unittest.TestCase):
         board = get_board_from_api(value)
         self.assertEqual(board, "Invalid size")
 
+##################################################################################################
+##################################### Interface ##################################################
+##################################################################################################
+
 
 class Test_interface(unittest.TestCase):
 
     def setUp(self):
         self.board_4_start = [
-            ["", 3, 4, ""],
-            [4, "", "", 2],
-            [1, "", "", 3],
-            ["", 2, 1, ""]]
+            [" ", 3, 4, " "],
+            [4, " ", " ", 2],
+            [1, " ", " ", 3],
+            [" ", 2, 1, " "]]
         self.board_4_end = [
             [2, 3, 4, 1],
             [4, 1, 3, 2],
             [1, 4, 2, 3],
-            [3, 2, 1, ""]]
+            [3, 2, 1, " "]]
         self.board_9_start = [
-            [5, 3, "", "", 7, "", "", "", ""],
-            [6, "", "", 1, 9, 5, "", "", ""],
-            ["", 9, 8, "", "", "", "", 6, ""],
-            [8, "", "", "", 6, "", "", "", 3],
-            [4, "", "", 8, "", 3, "", "", 1],
-            [7, "", "", "", 2, "", "", "", 6],
-            ["", 6, "", "", "", "", 2, 8, ""],
-            ["", "", "", 4, 1, 9, "", "", 5],
-            ["", "", "", "", 8, "", "", 7, 9]]
+            [5, 3, " ", " ", 7, " ", " ", " ", " "],
+            [6, " ", " ", 1, 9, 5, " ", " ", " "],
+            [" ", 9, 8, " ", " ", " ", " ", 6, " "],
+            [8, " ", " ", " ", 6, " ", " ", " ", 3],
+            [4, " ", " ", 8, " ", 3, " ", " ", 1],
+            [7, " ", " ", " ", 2, " ", " ", " ", 6],
+            [" ", 6, " ", " ", " ", " ", 2, 8, " "],
+            [" ", " ", " ", 4, 1, 9, " ", " ", 5],
+            [" ", " ", " ", " ", 8, " ", " ", 7, 9]]
         self.board_9_end = [
             [5, 3, 4, 6, 7, 8, 9, 1, 2],
             [6, 7, 2, 1, 9, 5, 3, 4, 8],
@@ -76,17 +80,17 @@ class Test_interface(unittest.TestCase):
             [7, 1, 3, 9, 2, 4, 8, 5, 6],
             [9, 6, 1, 5, 3, 7, 2, 8, 4],
             [2, 8, 7, 4, 1, 9, 6, 3, 5],
-            [3, 4, 5, 2, 8, 6, "", 7, 9]]
+            [3, 4, 5, 2, 8, 6, " ", 7, 9]]
         self.game = Interface()
 
-    @unittest.mock.patch("builtins.input", side_effect=["4"])
+    @unittest.mock.patch("builtins.input", side_effect=["4", "n"])
     def test_sudoku4_start(self, mock):
         self.game.set_game()
         self.assertEqual(self.game.size, 4)
         self.assertEqual(len(self.game.play.board[0]), 4)
         self.assertEqual(self.game.play.__class__.__name__, "Sudoku4")
 
-    @unittest.mock.patch("builtins.input", side_effect=["9"])
+    @unittest.mock.patch("builtins.input", side_effect=["9", "n"])
     def test_sudoku9_start(self, mock):
         self.game.set_game()
         self.assertEqual(self.game.size, 9)
@@ -100,7 +104,27 @@ class Test_interface(unittest.TestCase):
         self.assertEqual(self.game.row, "2")
         self.assertEqual(self.game.column, "3")
 
-    @unittest.mock.patch("builtins.input", side_effect=["4", "4", "4", "4"])
+    @unittest.mock.patch("builtins.input", side_effect=["4", "y"])
+    def test_nice_board_true_4x4(self, mock):
+        self.game.set_game()
+        self.assertTrue(self.game.play.nice_board)
+
+    @unittest.mock.patch("builtins.input", side_effect=["4", "n"])
+    def test_nice_board_false_4x4(self, mock):
+        self.game.set_game()
+        self.assertFalse(self.game.play.nice_board)
+
+    @unittest.mock.patch("builtins.input", side_effect=["9", "y"])
+    def test_nice_board_true_9x9(self, mock):
+        self.game.set_game()
+        self.assertTrue(self.game.play.nice_board)
+
+    @unittest.mock.patch("builtins.input", side_effect=["9", "n"])
+    def test_nice_board_true_9x9(self, mock):
+        self.game.set_game()
+        self.assertFalse(self.game.play.nice_board)
+
+    @unittest.mock.patch("builtins.input", side_effect=["4","n", "4", "4", "4"])
     def test_sudoku4_endgame(self, mock):
         self.game.set_game()
         self.game.play.set_board(self.board_4_end)
@@ -110,7 +134,7 @@ class Test_interface(unittest.TestCase):
         self.game.start_playing()
         self.assertFalse(self.game.play.is_playing)
 
-    @unittest.mock.patch("builtins.input", side_effect=["9", "1", "9", "7"])
+    @unittest.mock.patch("builtins.input", side_effect=["9","n", "1", "9", "7"])
     def test_sudoku9_endgame(self, mock):
         self.game.set_game()
         self.game.play.set_board(self.board_9_end)
@@ -119,6 +143,10 @@ class Test_interface(unittest.TestCase):
         self.assertTrue(self.game.play.is_playing)
         self.game.start_playing()
         self.assertFalse(self.game.play.is_playing)
+
+##################################################################################################
+##################################### Sudoku 9x9 #################################################
+##################################################################################################
 
 
 class Test_Sudoku9(unittest.TestCase):
@@ -157,6 +185,204 @@ class Test_Sudoku9(unittest.TestCase):
             [7, 4], [7, 5], [7, 8], [8, 4], [8, 7], [8, 8]])
         self.assertTrue(self.juego.is_playing)
 
+    @parameterized.expand([
+        (0, 0),
+        (0, 1),
+        (0, 4),
+        (1, 0),
+        (5, 4),
+        (5, 8),
+        (6, 1),
+        (6, 6),
+        (6, 7),
+        (7, 3),
+        (7, 4),
+        (7, 5),
+        (7, 8),
+        (8, 4),
+        (8, 7),
+        (8, 8),
+    ])
+    def test_check_if_original_is_original(self, row, column):
+        # False means it is an original number
+        self.juego.set_board(self.board_start)
+        self.assertFalse(self.juego.check_if_original(row + 1, column + 1))
+
+    @parameterized.expand([
+        (0, 2),
+        (0, 3),
+        (0, 5),
+        (1, 1),
+        (5, 5),
+        (5, 1),
+        (6, 0),
+        (6, 2),
+        (6, 3),
+        (7, 0),
+        (7, 1),
+        (7, 2),
+        (7, 6),
+        (8, 0),
+        (8, 1),
+        (8, 2),
+    ])
+    def test_check_if_original_not_original(self, row, column):
+        # True means it is not an original number
+        self.juego.set_board(self.board_start)
+        self.assertTrue(self.juego.check_if_original(row + 1, column + 1))
+
+    @parameterized.expand([
+        (1, 1, [5, 3, " ", 6, " ", " ", " ", 9, 8]),
+        (1, 5, [' ', 7, ' ', 1, 9, 5, ' ', ' ', ' ']),
+        (1, 8, [' ', ' ', ' ', ' ', ' ', ' ', ' ', 6, ' ']),
+        (4, 2, [8, ' ', ' ', 4, ' ', ' ', 7, ' ', ' ']),
+        (4, 4, [' ', 6, ' ', 8, ' ', 3, ' ', 2, ' ']),
+        (4, 9, [' ', ' ', 3, ' ', ' ', 1, ' ', ' ', 6]),
+        (7, 3, [' ', 6, ' ', ' ', ' ', ' ', ' ', ' ', ' ']),
+        (7, 6, [' ', ' ', ' ', 4, 1, 9, ' ', 8, ' ']),
+        (7, 7, [2, 8, ' ', ' ', ' ', 5, ' ', 7, 9])
+    ])
+    def test_get_region(self, row, column, region):
+        self.juego.set_board(self.board_start)
+        self.assertEqual(self.juego.get_region(row - 1, column - 1), region)
+
+    @parameterized.expand([
+        (5, 1, 3),
+        (4, 5, 3),
+        (9, 8, 3),
+        (8, 2, 3),
+        (2, 7, 5),
+        (8, 7, 5),
+        (6, 7, 5),
+        (1, 7, 5),
+        (9, 9, 1)
+    ])
+    def test_verify_location_invalid(self, num, row, column):
+        self.juego.set_board(self.board_start)
+        self.assertFalse(self.juego.verify_location(num, row, column))
+
+    @parameterized.expand([
+        (4, 1, 3),
+        (6, 1, 4),
+        (8, 1, 6),
+        (9, 1, 7),
+        (1, 1, 8),
+        (2, 1, 9),
+        (7, 2, 2),
+        (2, 2, 3),
+        (3, 2, 7),
+        (4, 2, 8),
+        (8, 2, 9),
+        (1, 3, 1),
+        (3, 3, 4),
+    ])
+    def test_verify_location_valid(self, num, row, column):
+        self.juego.set_board(self.board_start)
+        self.assertTrue(self.juego.verify_location(num, row, column))
+
+    @parameterized.expand([
+        (5, 1),
+        (6, 2),
+        (9, 3),
+        (8, 4),
+        (4, 5),
+        (7, 6),
+        (6, 7),
+        (4, 8),
+        (8, 9)
+    ])
+    def test_verify_row_invalid(self, num, row):
+        self.juego.set_board(self.board_start)
+        self.assertFalse(self.juego.verify_row(num, row - 1))
+
+    @parameterized.expand([
+        (1, 1),
+        (2, 2),
+        (3, 3),
+        (4, 4),
+        (5, 5),
+        (8, 6),
+        (9, 7),
+        (6, 8),
+        (2, 9)
+    ])
+    def test_verify_row_valid(self, num, row):
+        self.juego.set_board(self.board_start)
+        self.assertTrue(self.juego.verify_row(num, row - 1))
+
+    @parameterized.expand([
+        (5, 1),
+        (3, 2),
+        (8, 3),
+        (1, 4),
+        (7, 5),
+        (5, 6),
+        (2, 7),
+        (6, 8),
+        (3, 9)
+    ])
+    def test_verify_column_invalid(self, num, column):
+        self.juego.set_board(self.board_start)
+        self.assertFalse(self.juego.verify_column(num, column - 1))
+
+    @parameterized.expand([
+        (1, 1),
+        (2, 2),
+        (3, 3),
+        (5, 4),
+        (4, 5),
+        (6, 6),
+        (7, 7),
+        (9, 8),
+        (8, 9)
+    ])
+    def test_verify_column_valid(self, num, column):
+        self.juego.set_board(self.board_start)
+        self.assertTrue(self.juego.verify_column(num, column - 1))
+
+    @parameterized.expand([
+        (5, 1, 1),
+        (7, 2, 4),
+        (6, 3, 7),
+        (8, 4, 2),
+        (6, 5, 5),
+        (3, 6, 8),
+        (6, 7, 3),
+        (4, 8, 6),
+        (2, 9, 9)
+    ])
+    def test_verify_region_invalid(self, num, row, column):
+        self.juego.set_board(self.board_start)
+        self.assertFalse(self.juego.verify_region(num, row - 1, column - 1))
+
+    @parameterized.expand([
+        (1, 1, 1),
+        (2, 2, 4),
+        (3, 3, 7),
+        (5, 4, 2),
+        (7, 5, 5),
+        (8, 6, 8),
+        (9, 7, 3),
+        (2, 8, 6),
+        (3, 9, 9)
+    ])
+    def test_verify_region_valid(self, num, row, column):
+        self.juego.set_board(self.board_start)
+        self.assertTrue(self.juego.verify_region(num, row - 1, column - 1))
+
+    def test_set_column_board(self):
+        self.juego.set_board(self.board_start)
+        self.juego.set_column_board()
+        self.assertEqual(self.juego.board_column, [[5, 6, ' ', 8, 4, 7, ' ', ' ', ' '], 
+                                                    [3, ' ', 9, ' ', ' ', ' ', 6, ' ', ' '], 
+                                                    [' ', ' ', 8, ' ', ' ', ' ', ' ', ' ', ' '], 
+                                                    [' ', 1, ' ',' ', 8, ' ', ' ', 4, ' '], 
+                                                    [7, 9, ' ', 6, ' ', 2, ' ', 1, 8], 
+                                                    [' ', 5, ' ', ' ', 3, ' ', ' ', 9, ' '], 
+                                                    [' ', ' ', ' ', ' ', ' ', ' ', 2, ' ', ' '], 
+                                                    [' ', ' ', 6, ' ', ' ', ' ', 8, ' ', 7], 
+                                                    [' ', ' ', ' ', 3, 1, 6, ' ', 5, 9]])
+
     def test_place_valid_number(self):
         self.juego.set_board(self.board_start)
         self.juego.play(1, 1, 3)
@@ -172,20 +398,23 @@ class Test_Sudoku9(unittest.TestCase):
             [" ", " ", " ", 4, 1, 9, " ", " ", 5],
             [" ", " ", " ", " ", 8, " ", " ", 7, 9]])
 
-    def test_place_wrong_number(self):
+    def test_place_wrong_number_row(self):
         self.juego.set_board(self.board_start)
-        self.juego.play(3, 1, 3)
+        self.juego.play(3, 1, 4)
         self.assertTrue(self.juego.is_playing)
-        self.assertEqual(self.juego.board, [
-            [5, 3, 3, " ", 7, " ", " ", " ", " "],
-            [6, " ", " ", 1, 9, 5, " ", " ", " "],
-            [" ", 9, 8, " ", " ", " ", " ", 6, " "],
-            [8, " ", " ", " ", 6, " ", " ", " ", 3],
-            [4, " ", " ", 8, " ", 3, " ", " ", 1],
-            [7, " ", " ", " ", 2, " ", " ", " ", 6],
-            [" ", 6, " ", " ", " ", " ", 2, 8, " "],
-            [" ", " ", " ", 4, 1, 9, " ", " ", 5],
-            [" ", " ", " ", " ", 8, " ", " ", 7, 9]])
+        self.assertEqual(self.juego.error, "Number already in Row!")
+
+    def test_place_wrong_number_column(self):
+        self.juego.set_board(self.board_start)
+        self.juego.play(3, 6, 2)
+        self.assertTrue(self.juego.is_playing)
+        self.assertEqual(self.juego.error, "Number already in Column!")
+
+    def test_place_wrong_number_region(self):
+        self.juego.set_board(self.board_start)
+        self.juego.play(7, 5, 2)
+        self.assertTrue(self.juego.is_playing)
+        self.assertEqual(self.juego.error, "Number already in Region!")
 
     def test_replace_unoriginal_number(self):
         self.juego.set_board(self.board_start)
@@ -252,30 +481,6 @@ class Test_Sudoku9(unittest.TestCase):
             [2, 8, 7, 4, 1, 9, 6, 3, 5],
             [3, 4, 5, 2, 8, 6, 1, 7, 9]])
 
-    def test_no_victory_beacuse_of_regions(self):
-        self.juego.set_board([
-            [1, 2, 3, 4, 5, 6, 7, 8, 9],
-            [9, 1, 2, 3, 4, 5, 6, 7, 8],
-            [8, 9, 1, 2, 3, 4, 5, 6, 7],
-            [7, 8, 9, 1, 2, 3, 4, 5, 6],
-            [6, 7, 8, 9, 1, 2, 3, 4, 5],
-            [5, 6, 7, 8, 9, 1, 2, 3, 4],
-            [4, 5, 6, 7, 8, 9, 1, 2, 3],
-            [3, 4, 5, 6, 7, 8, 9, 1, 2],
-            [2, 3, 4, 5, 6, 7, 8, 9, " "]])
-        self.juego.play(1, 9, 9)
-        self.assertTrue(self.juego.is_playing)
-        self.assertEqual(self.juego.board, [
-            [1, 2, 3, 4, 5, 6, 7, 8, 9],
-            [9, 1, 2, 3, 4, 5, 6, 7, 8],
-            [8, 9, 1, 2, 3, 4, 5, 6, 7],
-            [7, 8, 9, 1, 2, 3, 4, 5, 6],
-            [6, 7, 8, 9, 1, 2, 3, 4, 5],
-            [5, 6, 7, 8, 9, 1, 2, 3, 4],
-            [4, 5, 6, 7, 8, 9, 1, 2, 3],
-            [3, 4, 5, 6, 7, 8, 9, 1, 2],
-            [2, 3, 4, 5, 6, 7, 8, 9, 1]])
-
     @parameterized.expand([
         ("hola", "Number, row, or column are NOT valid"),
         (10, "Number is not between 1-9"),
@@ -294,8 +499,8 @@ class Test_Sudoku9(unittest.TestCase):
 
     @parameterized.expand([
         ("hola", "Number, row, or column are NOT valid"),
-        (0, "Number, row, or column are NOT valid"),
-        (22, "Number, row, or column are NOT valid"),
+        (0, "Row or Column not between 1-9"),
+        (22, "Row or Column not between 1-9"),
         ("", "Number, row, or column are NOT valid"),
         ("2.05", "Number, row, or column are NOT valid"),
         ("A", "Number, row, or column are NOT valid"),
@@ -308,8 +513,8 @@ class Test_Sudoku9(unittest.TestCase):
 
     @parameterized.expand([
         ("hola", "Number, row, or column are NOT valid"),
-        (0, "Number, row, or column are NOT valid"),
-        (55, "Number, row, or column are NOT valid"),
+        (0, "Row or Column not between 1-9"),
+        (55, "Row or Column not between 1-9"),
         ("", "Number, row, or column are NOT valid"),
         ("2.05", "Number, row, or column are NOT valid"),
         ("A", "Number, row, or column are NOT valid"),
@@ -321,61 +526,64 @@ class Test_Sudoku9(unittest.TestCase):
         self.assertEqual(self.juego.error, result)
 
     @parameterized.expand([
-        (1, 1, 3),
-        (2, 1, 4),
-        (3, 1, 6),
-        (4, 1, 7),
-        (5, 1, 8),
-        (6, 1, 9),
+        (4, 1, 3),
+        (6, 1, 4),
+        (8, 1, 6),
+        (9, 1, 7),
+        (1, 1, 8),
+        (2, 1, 9),
         (7, 2, 2),
-        (8, 2, 3),
-        (9, 2, 7),
-        (1, 2, 8),
-        (2, 2, 9),
-        (3, 3, 1),
-        (4, 3, 4),
-        (5, 3, 5),
-        (6, 3, 6),
-        (7, 3, 7),
-        (8, 3, 9),
-        (9, 4, 2),
-        (1, 4, 3),
-        (2, 4, 4),
-        (3, 4, 6),
+        (2, 2, 3),
+        (3, 2, 7),
+        (4, 2, 8),
+        (8, 2, 9),
+        (1, 3, 1),
+        (3, 3, 4),
+        (4, 3, 5),
+        (2, 3, 6),
+        (5, 3, 7),
+        (7, 3, 9),
+        (5, 4, 2),
+        (9, 4, 3),
+        (7, 4, 4),
+        (1, 4, 6),
         (4, 4, 7),
-        (5, 5, 2),
+        (2, 5, 2),
         (6, 5, 3),
-        (7, 5, 5),
-        (8, 5, 7),
+        (5, 5, 5),
+        (7, 5, 7),
         (9, 5, 8),
-        (1, 6, 3),
-        (2, 6, 2),
+        (1, 6, 2),
         (3, 6, 3),
-        (4, 6, 4),
-        (5, 6, 6),
-        (6, 6, 7),
-        (7, 7, 1),
-        (8, 7, 3),
-        (9, 7, 4),
-        (1, 7, 5),
-        (2, 7, 6),
-        (3, 7, 9),
-        (4, 8, 1),
-        (5, 8, 2),
-        (6, 8, 3),
-        (7, 8, 7),
-        (8, 8, 8),
-        (9, 9, 1),
-        (1, 9, 2),
-        (2, 9, 3),
-        (3, 9, 4),
-        (4, 9, 6),
-        (5, 9, 7),
+        (9, 6, 4),
+        (4, 6, 6),
+        (8, 6, 7),
+        (9, 7, 1),
+        (1, 7, 3),
+        (5, 7, 4),
+        (3, 7, 5),
+        (7, 7, 6),
+        (4, 7, 9),
+        (2, 8, 1),
+        (8, 8, 2),
+        (7, 8, 3),
+        (6, 8, 7),
+        (3, 8, 8),
+        (3, 9, 1),
+        (4, 9, 2),
+        (5, 9, 3),
+        (2, 9, 4),
+        (6, 9, 6),
+        (1, 9, 7),
     ])
     def test_parameterized_valid_numbers_rows_columns(self, num, row, column):
         self.juego.set_board(self.board_start)
         self.juego.play(num, row, column)
         self.assertEqual(self.juego.error, "")
+
+##################################################################################################
+##################################### Sudoku 4x4 #################################################
+##################################################################################################
 
 
 class Test_Sudoku4(unittest.TestCase):
@@ -383,7 +591,7 @@ class Test_Sudoku4(unittest.TestCase):
         self.board_start = [
             [" ", 3, 4, " "],
             [4, " ", " ", 2],
-            [1, " ", " ", 3],
+            [1, " ", " ", " "],
             [" ", 2, 1, " "]]
         self.board_end = [
             [2, 3, 4, 1],
@@ -396,8 +604,135 @@ class Test_Sudoku4(unittest.TestCase):
         self.juego.set_board(self.board_start)
         self.assertEqual(self.juego.board, self.board_start)
         self.assertEqual(self.juego.original_numbers,
-            [[0, 1], [0, 2], [1, 0], [1, 3], [2, 0], [2, 3], [3, 1], [3, 2]])
+            [[0, 1], [0, 2], [1, 0], [1, 3], [2, 0], [3, 1], [3, 2]])
         self.assertTrue(self.juego.is_playing)
+
+    @parameterized.expand([
+        (0, 1),
+        (0, 2),
+        (1, 0),
+        (1, 3),
+        (2, 0),
+        (3, 1),
+        (3, 2),
+    ])
+    def test_check_if_original_is_original(self, row, column):
+        # False means it is an original number
+        self.juego.set_board(self.board_start)
+        self.assertFalse(self.juego.check_if_original(row + 1, column + 1))
+
+    @parameterized.expand([
+        (0, 0),
+        (0, 3),
+        (1, 1),
+        (1, 2),
+        (2, 1),
+        (3, 0),
+        (3, 3),
+    ])
+    def test_check_if_original_not_original(self, row, column):
+        # True means it is not an original number
+        self.juego.set_board(self.board_start)
+        self.assertTrue(self.juego.check_if_original(row + 1, column + 1))
+
+    def test_set_column_board(self):
+        self.juego.set_board(self.board_start)
+        self.juego.set_column_board()
+        self.assertEqual(self.juego.board_column, [[' ', 4, 1, ' '], 
+                                                    [3, ' ', ' ', 2], 
+                                                    [4, ' ', ' ', 1], 
+                                                    [' ', 2, ' ',' ']])
+
+    @parameterized.expand([
+        (1, 1, [" ", 3, 4, " "]),
+        (2, 3, [4, " ", ' ', 2]),
+        (3, 2, [1, ' ', ' ', 2]),
+        (4, 4, [" ", ' ', 1, " "]),
+    ])
+    def test_get_region(self, row, column, region):
+        self.juego.set_board(self.board_start)
+        self.assertEqual(self.juego.get_region(row - 1, column - 1), region)
+
+    @parameterized.expand([
+        (4, 1, 1),
+        (3, 2, 2),
+        (1, 3, 3),
+        (2, 4, 4),
+    ])
+    def test_verify_location_invalid(self, num, row, column):
+        self.juego.set_board(self.board_start)
+        self.assertFalse(self.juego.verify_location(num, row, column))
+
+    @parameterized.expand([
+        (2, 1, 1),
+        (1, 1, 4),
+        (1, 2, 2),
+        (3, 2, 3),
+        (4, 3, 2),
+    ])
+    def test_verify_location_valid(self, num, row, column):
+        self.juego.set_board(self.board_start)
+        self.assertTrue(self.juego.verify_location(num, row, column))
+
+    @parameterized.expand([
+        (3, 1),
+        (4, 2),
+        (1, 3),
+        (2, 4),
+    ])
+    def test_verify_row_invalid(self, num, row):
+        self.juego.set_board(self.board_start)
+        self.assertFalse(self.juego.verify_row(num, row - 1))
+
+    @parameterized.expand([
+        (1, 1),
+        (3, 2),
+        (2, 3),
+        (4, 4),
+    ])
+    def test_verify_row_valid(self, num, row):
+        self.juego.set_board(self.board_start)
+        self.assertTrue(self.juego.verify_row(num, row - 1))
+
+    @parameterized.expand([
+        (1, 1),
+        (3, 2),
+        (4, 3),
+        (2, 4),
+    ])
+    def test_verify_column_invalid(self, num, column):
+        self.juego.set_board(self.board_start)
+        self.assertFalse(self.juego.verify_column(num, column - 1))
+
+    @parameterized.expand([
+        (2, 1),
+        (1, 2),
+        (3, 3),
+        (4, 4),
+    ])
+    def test_verify_column_valid(self, num, column):
+        self.juego.set_board(self.board_start)
+        self.assertTrue(self.juego.verify_column(num, column - 1))
+
+    @parameterized.expand([
+        (3, 1, 1),
+        (4, 2, 3),
+        (2, 3, 2),
+        (1, 4, 4),
+    ])
+    def test_verify_region_invalid(self, num, row, column):
+        self.juego.set_board(self.board_start)
+        self.assertFalse(self.juego.verify_region(num, row - 1, column - 1))
+
+    @parameterized.expand([
+        (1, 1, 1),
+        (3, 2, 3),
+        (4, 3, 2),
+        (2, 4, 4),
+    ])
+    def test_verify_region_valid(self, num, row, column):
+        self.juego.set_board(self.board_start)
+        self.assertTrue(self.juego.verify_region(num, row - 1, column - 1))
 
     def test_place_valid_number(self):
         self.juego.set_board(self.board_start)
@@ -406,33 +741,35 @@ class Test_Sudoku4(unittest.TestCase):
         self.assertEqual(self.juego.board, [
             [" ", 3, 4, 1],
             [4, " ", " ", 2],
-            [1, " ", " ", 3],
+            [1, " ", " ", " "],
             [" ", 2, 1, " "]])
 
-    def test_place_wrong_number(self):
+    def test_place_wrong_number_row(self):
         self.juego.set_board(self.board_start)
-        self.juego.play(1, 1, 1)
+        self.juego.play(3, 1, 4)
         self.assertTrue(self.juego.is_playing)
-        self.assertEqual(self.juego.board, [
-            [1, 3, 4, " "],
-            [4, " ", " ", 2],
-            [1, " ", " ", 3],
-            [" ", 2, 1, " "]])
+        self.assertEqual(self.juego.error, "Number already in Row!")
+
+    def test_place_wrong_number_column(self):
+        self.juego.set_board(self.board_start)
+        self.juego.play(4, 3, 3)
+        self.assertTrue(self.juego.is_playing)
+        self.assertEqual(self.juego.error, "Number already in Column!")
 
     def test_replace_unoriginal_number(self):
         self.juego.set_board(self.board_start)
-        self.juego.play(1, 1, 1)
+        self.juego.play(3, 3, 4)
         self.assertEqual(self.juego.board, [
-            [1, 3, 4, " "],
+            [" ", 3, 4, " "],
             [4, " ", " ", 2],
             [1, " ", " ", 3],
             [" ", 2, 1, " "]])
-        self.juego.play(2, 1, 1)
+        self.juego.play(4, 3, 4)
         self.assertTrue(self.juego.is_playing)
         self.assertEqual(self.juego.board, [
-            [2, 3, 4, " "],
+            [" ", 3, 4, " "],
             [4, " ", " ", 2],
-            [1, " ", " ", 3],
+            [1, " ", " ", 4],
             [" ", 2, 1, " "]])
 
     @parameterized.expand([
@@ -441,7 +778,6 @@ class Test_Sudoku4(unittest.TestCase):
         (2, 1),
         (2, 4),
         (3, 1),
-        (3, 4),
         (4, 2),
         (4, 3),
     ])
@@ -462,20 +798,6 @@ class Test_Sudoku4(unittest.TestCase):
             [1, 4, 2, 3],
             [3, 2, 1, 4]])
 
-    def test_no_victory_because_of_regions(self):
-        self.juego.set_board([
-            [1, 2, 3, 4],
-            [4, 1, 2, 3],
-            [3, 4, 1, 2],
-            [2, 3, 4, " "]])
-        self.juego.play(1, 4, 4)
-        self.assertTrue(self.juego.is_playing)
-        self.assertEqual(self.juego.board, [
-            [1, 2, 3, 4],
-            [4, 1, 2, 3],
-            [3, 4, 1, 2],
-            [2, 3, 4, 1]])
-
     @parameterized.expand([
         ("hola", "Number, row, or column are NOT valid"),
         (10, "Number is not between 1-4"),
@@ -494,11 +816,11 @@ class Test_Sudoku4(unittest.TestCase):
 
     @parameterized.expand([
         ("hola", "Number, row, or column are NOT valid"),
-        (0, "Number, row, or column are NOT valid"),
-        (22, "Number, row, or column are NOT valid"),
-        (5, "Number, row, or column are NOT valid"),
-        (7, "Number, row, or column are NOT valid"),
-        (9, "Number, row, or column are NOT valid"),
+        (0, "Row or Column not between 1-4"),
+        (22, "Row or Column not between 1-4"),
+        (5, "Row or Column not between 1-4"),
+        (7, "Row or Column not between 1-4"),
+        (9, "Row or Column not between 1-4"),
         ("", "Number, row, or column are NOT valid"),
         ("2.05", "Number, row, or column are NOT valid"),
         ("A", "Number, row, or column are NOT valid"),
@@ -511,11 +833,11 @@ class Test_Sudoku4(unittest.TestCase):
 
     @parameterized.expand([
         ("hola", "Number, row, or column are NOT valid"),
-        (0, "Number, row, or column are NOT valid"),
-        (55, "Number, row, or column are NOT valid"),
-        (5, "Number, row, or column are NOT valid"),
-        (7, "Number, row, or column are NOT valid"),
-        (9, "Number, row, or column are NOT valid"),
+        (0, "Row or Column not between 1-4"),
+        (55, "Row or Column not between 1-4"),
+        (5, "Row or Column not between 1-4"),
+        (7, "Row or Column not between 1-4"),
+        (9, "Row or Column not between 1-4"),
         ("", "Number, row, or column are NOT valid"),
         ("2.05", "Number, row, or column are NOT valid"),
         ("A", "Number, row, or column are NOT valid"),
@@ -527,11 +849,11 @@ class Test_Sudoku4(unittest.TestCase):
         self.assertEqual(self.juego.error, result)
 
     @parameterized.expand([
-        (1, 1, 1),
-        (2, 1, 4),
-        (3, 2, 2),
-        (4, 2, 3),
-        (1, 3, 2),
+        (2, 1, 1),
+        (1, 1, 4),
+        (1, 2, 2),
+        (3, 2, 3),
+        (4, 3, 2),
         (2, 3, 3),
         (3, 4, 1),
         (4, 4, 4),
@@ -542,7 +864,9 @@ class Test_Sudoku4(unittest.TestCase):
         self.assertEqual(self.juego.error, "")
 
 ##############################################################################################
+###################################### Test Profe ############################################
 ##############################################################################################
+
 
 class Test_Profe(unittest.TestCase):
 
@@ -595,242 +919,211 @@ class Test_Profe(unittest.TestCase):
         self.assertEqual(self.game.error, "Tried to replace an original number")
 
     @parameterized.expand([
-        ("a",),
-        ("b",),
-        ("c",),
-        ("d",),
-        ("e",),
-        ("f",),
-        ("g",),
-        ("h",),
-        ("i",),
-        ("hola",),
-        (0,),
-        (22,),
-        ("",),
-        ("2.05",),
+        ("a", "Number, row, or column are NOT valid"),
+        ("b", "Number, row, or column are NOT valid"),
+        ("c", "Number, row, or column are NOT valid"),
+        ("d", "Number, row, or column are NOT valid"),
+        ("e", "Number, row, or column are NOT valid"),
+        ("f", "Number, row, or column are NOT valid"),
+        ("g", "Number, row, or column are NOT valid"),
+        ("h", "Number, row, or column are NOT valid"),
+        ("i", "Number, row, or column are NOT valid"),
+        ("hola", "Number, row, or column are NOT valid"),
+        (0, "Row or Column not between 1-9"),
+        (22, "Row or Column not between 1-9"),
+        ("", "Number, row, or column are NOT valid"),
+        ("2.05", "Number, row, or column are NOT valid"),
     ])
-    def test_validate_insert_illegal_value_in_row(self, row):
+    def test_validate_insert_illegal_value_in_row(self, row, message):
         self.game.set_board(self.board_start)
         self.game.play(1, row, 3)
-        self.assertEqual(self.game.error, "Number, row, or column are NOT valid")
+        self.assertEqual(self.game.error, message)
 
     @parameterized.expand([
-        (1, 7),
-        (2, 7),
-        (3, 7),
-        (4, 7),
-        (5, 7),
-        (6, 7),
-        (7, 9),
-        (8, 7),
-        (9, 7),
+        (9, 1, 7),
+        (3, 2, 7),
+        (5, 3, 7),
+        (4, 4, 7),
+        (7, 5, 7),
+        (8, 6, 7),
+        (4, 7, 9),
+        (6, 8, 7),
+        (1, 9, 7),
     ])
-    def test_validate_insert_legal_value_in_row(self, row, column):
-        self.game.play(1, row, column)
+    def test_validate_insert_legal_value_in_row(self, number, row, column):
+        self.game.play(number, row, column)
         self.assertEqual(self.game.error, "")
 
     @parameterized.expand([
-        ("a",),
-        ("b",),
-        ("c",),
-        ("d",),
-        ("e",),
-        ("f",),
-        ("g",),
-        ("h",),
-        ("i",),
-        ("hola",),
-        (0,),
-        (22,),
-        ("",),
-        ("2.05",),
+        ("a", "Number, row, or column are NOT valid"),
+        ("b", "Number, row, or column are NOT valid"),
+        ("c", "Number, row, or column are NOT valid"),
+        ("d", "Number, row, or column are NOT valid"),
+        ("e", "Number, row, or column are NOT valid"),
+        ("f", "Number, row, or column are NOT valid"),
+        ("g", "Number, row, or column are NOT valid"),
+        ("h", "Number, row, or column are NOT valid"),
+        ("i", "Number, row, or column are NOT valid"),
+        ("hola", "Number, row, or column are NOT valid"),
+        (0, "Row or Column not between 1-9"),
+        (22, "Row or Column not between 1-9"),
+        ("", "Number, row, or column are NOT valid"),
+        ("2.05", "Number, row, or column are NOT valid"),
     ])
-    def test_validate_insert_illegal_value_in_column(self, column):
+    def test_validate_insert_illegal_value_in_column(self, column, message):
         self.game.set_board(self.board_start)
         self.game.play(1, 3, column)
-        self.assertEqual(self.game.error, "Number, row, or column are NOT valid")
+        self.assertEqual(self.game.error, message)
 
     @parameterized.expand([
-        (1, 9),
-        (2, 9),
-        (3, 1),
-        (4, 1),
-        (5, 7),
-        (6, 1),
-        (7, 1),
-        (8, 1),
-        (9, 1),
+        (9, 1, 7),
+        (3, 2, 7),
+        (5, 3, 7),
+        (4, 4, 7),
+        (7, 5, 7),
+        (8, 6, 7),
+        (4, 7, 9),
+        (6, 8, 7),
+        (1, 9, 7),
     ])
-    def test_validate_insert_legal_value_in_column(self, column, row):
-        self.game.play(1, row, column)
+    def test_validate_insert_legal_value_in_column(self, number, row, column):
+        self.game.play(number, row, column)
         self.assertEqual(self.game.error, "")
 
     @parameterized.expand([
-        (1, "a", 1),
-        (2, 2, "b"),
-        (3, "c", 3),
-        (4, 4, "d"),
-        (5, "e", 5),
-        (6, 6, "f"),
-        (7, "g", 7),
-        (8, 8, "h"),
-        (9, "i", 9)
-    ])
+        (3, 3, 1),
+        (5, 3, 4),
+        (5, 3, 5),
+        (6, 1, 7),
+        (8, 6, 2),
+        (4, 4, 2),
+        (3, 6, 4),
+        (1, 4, 7),
+        (6, 8, 3),
+        (9, 7, 4),
+        (2, 8, 8),
+        ])
     def test_validate_insert_illegal_value_in_region(self, value, row, column):
         self.game.play(value, row, column)
-        self.assertEqual(self.game.error, "Number, row, or column are NOT valid")
+        self.assertEqual(self.game.error, "Number already in Region!")
 
     @parameterized.expand([
-        (1, 1, 3),
-        (2, 2, 9),
-        (3, 3, 5),
-        (4, 4, 2),
-        (5, 5, 5),
-        (6, 6, 8),
-        (7, 7, 1),
-        (8, 8, 8),
-        (9, 9, 4)
+        (9, 1, 7),
+        (3, 2, 7),
+        (5, 3, 7),
+        (4, 4, 7),
+        (7, 5, 7),
+        (8, 6, 7),
+        (4, 7, 9),
+        (6, 8, 7),
+        (1, 9, 7),
     ])
     def test_validate_insert_legal_value_in_region(self, value, row, column):
         self.game.play(value, row, column)
         self.assertEqual(self.game.error, "")
 
-###################################################################################
-    """
-    @parameterized.expand([
-        ('a', 1, [" ", "6", " ", "5", "3", "7", " ", "4", " "]),
-        ('b', 5, ["3", " ", " ", " ", "9", " ", " ", " ", "6"]),
-        ('c', 8, ["8", " ", "4", " ", " ", " ", "3", " ", "7"]),
-        ('d', 2, [" ", "9", " ", " ", " ", " ", "7", "1", "3"]),
-        ('e', 4, [" ", "5", "1", " ", " ", " ", "6", "2", " "]),
-        ('f', 9, ["2", "3", "8", " ", " ", " ", " ", "4", " "]),
-        ('g', 3, ["3", " ", "6", " ", " ", " ", "1", " ", "2"]),
-        ('h', 6, ["4", " ", " ", " ", "6", " ", " ", " ", "9"]),
-        ('i', 7, [" ", "1", " ", "5", "2", "3", " ", "8", " "])
-    ])
-    def test_get_region(self, row, column, region):
-        self.assertEqual(self.board.get_region(row, column), region)
-    """
-####################################################################################
+
 
     @parameterized.expand([
-        (1, 1, 3),
-        (2, 1, 4),
-        (3, 1, 6),
-        (4, 1, 7),
-        (5, 1, 8),
-        (6, 1, 9),
+        (1, 1, [5, 3, " ", 6, " ", " ", " ", 9, 8]),
+        (1, 5, [' ', 7, ' ', 1, 9, 5, ' ', ' ', ' ']),
+        (1, 8, [' ', ' ', ' ', ' ', ' ', ' ', ' ', 6, ' ']),
+        (4, 2, [8, ' ', ' ', 4, ' ', ' ', 7, ' ', ' ']),
+        (4, 4, [' ', 6, ' ', 8, ' ', 3, ' ', 2, ' ']),
+        (4, 9, [' ', ' ', 3, ' ', ' ', 1, ' ', ' ', 6]),
+        (7, 3, [' ', 6, ' ', ' ', ' ', ' ', ' ', ' ', ' ']),
+        (7, 6, [' ', ' ', ' ', 4, 1, 9, ' ', 8, ' ']),
+        (7, 7, [2, 8, ' ', ' ', ' ', 5, ' ', 7, 9])
+    ])
+    def test_get_region(self, row, column, region):
+        self.assertEqual(self.game.get_region(row - 1, column - 1), region)
+
+    @parameterized.expand([
+        (4, 1, 3),
+        (6, 1, 4),
+        (8, 1, 6),
+        (9, 1, 7),
+        (1, 1, 8),
+        (2, 1, 9),
         (7, 2, 2),
-        (8, 2, 3),
-        (9, 2, 7),
-        (1, 2, 8),
-        (2, 2, 9),
-        (3, 3, 1),
-        (4, 3, 4),
-        (5, 3, 5),
-        (6, 3, 6),
-        (7, 3, 7),
-        (8, 3, 9),
-        (9, 4, 2),
-        (1, 4, 3),
-        (2, 4, 4),
-        (3, 4, 6),
+        (2, 2, 3),
+        (3, 2, 7),
+        (4, 2, 8),
+        (8, 2, 9),
+        (1, 3, 1),
+        (3, 3, 4),
+        (4, 3, 5),
+        (2, 3, 6),
+        (5, 3, 7),
+        (7, 3, 9),
+        (5, 4, 2),
+        (9, 4, 3),
+        (7, 4, 4),
+        (1, 4, 6),
         (4, 4, 7),
-        (5, 5, 2),
+        (2, 5, 2),
         (6, 5, 3),
-        (7, 5, 5),
-        (8, 5, 7),
+        (5, 5, 5),
+        (7, 5, 7),
         (9, 5, 8),
-        (1, 6, 3),
-        (2, 6, 2),
+        (1, 6, 2),
         (3, 6, 3),
-        (4, 6, 4),
-        (5, 6, 6),
-        (6, 6, 7),
-        (7, 7, 1),
-        (8, 7, 3),
-        (9, 7, 4),
-        (1, 7, 5),
-        (2, 7, 6),
-        (3, 7, 9),
-        (4, 8, 1),
-        (5, 8, 2),
-        (6, 8, 3),
-        (7, 8, 7),
-        (8, 8, 8),
-        (9, 9, 1),
-        (1, 9, 2),
-        (2, 9, 3),
-        (3, 9, 4),
-        (4, 9, 6),
-        (5, 9, 7),
+        (9, 6, 4),
+        (4, 6, 6),
+        (8, 6, 7),
+        (9, 7, 1),
+        (1, 7, 3),
+        (5, 7, 4),
+        (3, 7, 5),
+        (7, 7, 6),
+        (4, 7, 9),
+        (2, 8, 1),
+        (8, 8, 2),
+        (7, 8, 3),
+        (6, 8, 7),
+        (3, 8, 8),
+        (3, 9, 1),
+        (4, 9, 2),
+        (5, 9, 3),
+        (2, 9, 4),
+        (6, 9, 6),
+        (1, 9, 7),
     ])
     def test_place_number_legally(self, value, row, column):
         self.game.play(value, row, column)
         self.assertEqual(self.game.board[row - 1][column - 1], value)
-    """
-    @parameterized.expand([
-        (('a', 1), 3, REPEATED_ON_ROW),
-        (('b', 8), 4, REPEATED_ON_COLUMN),
-        (('c', 3), 7, REPEATED_ON_ROW),
-        (('g', 2), 2, REPEATED_ON_REGION),
-        (('f', 9), 8, REPEATED_ON_COLUMN),
-        (('b', 8), 8, REPEATED_ON_REGION),
-    ])
 
-    def test_place_number_illegally(
+    @parameterized.expand([
+        ((8, 1), 9, "Number already in Row!"),
+        ((4, 4), 4, "Number already in Column!"),
+        ((6, 3), 2, "Number already in Row!"),
+        ((1, 7), 6, "Number already in Region!"),
+        ((3, 6), 3, "Number already in Column!"),
+        ((8, 8), 2, "Number already in Region!"),
+        ((1, 1), 1, "Tried to replace an original number"),
+        ((4, 5), 2, "Tried to replace an original number"),
+    ])
+    def test_place_number_in_invalid_places(
             self, coordinates, value, message):
 
         row, column = coordinates
-        with self.assertRaises(Exception) as raised:
-            self.board.place(coordinates, value)
-        self.assertIn(message, str(raised.exception))
-        self.assertEqual(self.board.board[row][column - 1]['val'], ' ')
-
-​
-
-    @parameterized.expand([
-        (('a', 2), 6),
-        (('b', 5), 9),
-        (('c', 9), 7),
-        (('d', 2), 9),
-        (('f', 3), 3),
-        (('g', 8), 1),
-        (('h', 7), 5),
-    ])
-    def test_place_number_already_set(self, coordinates, value):
-        row, column = coordinates
-        original_value = self.board.board[row][column - 1]['val']
-        with self.assertRaises(Exception) as raised:
-            self.board.place(coordinates, value)
-        self.assertIn(NOT_MODIFIABLE, str(raised.exception))
-        self.assertEqual(
-            self.board.board[row][column - 1]['val'],
-            original_value)
-
-​
-    @parameterized.expand([
-        (('a', 1), 3, REPEATED_ON_ROW),
-        (('b', 8), 4, REPEATED_ON_COLUMN),
-        (('e', 1), 9, REPEATED_ON_REGION),
-        (('a', 2), 1, NOT_MODIFIABLE),
-    ])
-    def test_validate_invalid_number(
-            self, coordinates, value, message):
-
-        with self.assertRaises(Exception) as raised:
-            self.board.validate_number(coordinates, value)
-        self.assertIn(message, str(raised.exception))
+        self.game.play(value, row, column)
+        self.assertEqual(self.game.error, message)
 
     def test_is_finished_for_an_unfinished_board(self):
-        self.assertFalse(self.board.is_finished())
+        # Checks if still playing, True = Not win, False = Win
+        self.assertTrue(self.game.win())
 
     def test_is_finished_for_a_finished_board(self):
-        self.assertTrue(self.finished_board.is_finished())
+        # Checks if still playing, True = Not win, False = Win
+        self.game.set_board(self.board_end)
+        self.game.play(1, 9, 7)
+        self.assertFalse(self.game.win())
 
     def test_board(self):
-        self.assertEqual(EXAMPLE_SHOWN_BOARD, self.board.show_board())
-    """
+        self.assertEqual("\n5 3   |  7   |     \n6     |1 9 5 |     \n  9 8 |      |  6  \n------+------+------\n8     |  6   |    3\n4     |8   3 |    1\n7     |  2   |    6\n------+------+------\n  6   |      |2 8  \n      |4 1 9 |    5\n      |  8   |  7 9"
+            , self.game.board_print())
+
+
 if __name__ == '__main__':
     unittest.main()
